@@ -33,3 +33,12 @@ export class UserController {
     return this.userService.remove(+id);
   }
 }
+
+// const user = {
+//   email: "ejemplo",
+//   pass: "123"
+// }
+
+// user.email
+
+// const {email} = user

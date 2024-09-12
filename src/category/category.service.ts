@@ -1,24 +1,25 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Role } from './entities/role.entity';
+import { Category } from './entities/category.entity';
 import { Like, Repository } from 'typeorm';
-import { RoleSearchDto } from './dto/role-search.dto';
+import { RoleSearchDto } from 'src/roles/dto/role-search.dto';
+import { CategorySearchDto } from './dto/category-search.dto';
 
 @Injectable()
-export class RolesService {
-  constructor (
-    @InjectRepository(Role)
-    private readonly rolesRepository: Repository<Role>,
-  ){}
-  async create(createRoleDto: CreateRoleDto) {
+export class CategoryService {
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+  ) {}
+  async create(createCategoryDto: CreateCategoryDto) {
     try{
-      const role = await this.rolesRepository.create(createRoleDto);
-      await this.rolesRepository.save(role);
+      const category = await this.categoryRepository.create(createCategoryDto);
+      await this.categoryRepository.save(category);
       return {
         ok: true,
-        message: "role created",
+        message: "category created",
         status: HttpStatus.CREATED
       }
     }catch(error){
@@ -26,19 +27,19 @@ export class RolesService {
     }
   }
 
-  async findAll({ role, page, limit }: RoleSearchDto) {
+  async findAll({ name, page, limit }: CategorySearchDto) {
     try{
-      const [roles, total] = await this.rolesRepository.findAndCount({
+      const [category, total] = await this.categoryRepository.findAndCount({
         where: {
-          role: Like(`%${role}%`),
+          name: Like(`%${name}%`),
           isActive: true
         },
         order: {id: 'DESC'},
         skip: (page - 1) * limit,
         take: limit,
       });
-      console.log(roles)
-      if(roles.length > 0){
+      console.log(category)
+      if(category.length > 0){
         let totalPag: number = total / limit;
         if (totalPag % 1 != 0){
           totalPag = Math.trunc(totalPag) + 1;
@@ -47,13 +48,13 @@ export class RolesService {
         let prevPag: number = page <= 1 ? page : page -1;
         return{
           ok: true,
-          roles,
+          category,
           total,
           totalPag,
           currentPage: Number(page),
           nextPag,
           prevPag,
-          message: 'user found sucessfully',
+          message: 'categorys found sucessfully',
           status: HttpStatus.OK
         }
       }
@@ -64,8 +65,8 @@ export class RolesService {
 
   async findOne(id: number) {
     try{
-      const roles = await this.rolesRepository.find({where: {id,isActive: true}});
-      if(!roles){
+      const categorys = await this.categoryRepository.find({where: {id,isActive: true}});
+      if(!categorys){
         return {
           ok: false,
           message: "not found",
@@ -74,23 +75,23 @@ export class RolesService {
       }
       return {
         ok: true,
-        message: "role founded",
+        message: "category founded",
         status: HttpStatus.CREATED,
-        roles
+        categorys
       }
     }catch(error){
       throw new NotFoundException(`Ocurrio un error ${error.message}`)
     }
   }
 
-  async update(id: number, updateRoleDto: UpdateRoleDto) {
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     try{
-      const role = await this.rolesRepository.findOne({where:{id}});
-      role.role = updateRoleDto.role;
-      await this.rolesRepository.save(role);
+      const category = await this.categoryRepository.findOne({where:{id}});
+      category.name = updateCategoryDto.name;
+      await this.categoryRepository.save(category);
       return {
         ok: true,
-        message: "role updated",
+        message: "category updated",
         status: HttpStatus.OK
       }
     }catch(error){
@@ -100,20 +101,20 @@ export class RolesService {
 
   async remove(id: number) {
     try{
-      const roles = await this.rolesRepository.findOne({where: {id,isActive: true}});
-      if(!roles){
+      const categorys = await this.categoryRepository.findOne({where: {id,isActive: true}});
+      if(!categorys){
         return {
           ok: false,
           message: "not found",
           status: HttpStatus.NOT_FOUND
         }
       }
-      roles.isActive = false;
-      await this.rolesRepository.save(roles);
+      categorys.isActive = false;
+      await this.categoryRepository.save(categorys);
 
       return {
         ok: true,
-        message: "role found",
+        message: "category found",
         status: HttpStatus.OK
       }
     }catch(error){
